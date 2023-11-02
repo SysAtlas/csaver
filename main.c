@@ -1,28 +1,26 @@
-#include <getopt.h>
-#include <unistd.h>
 #include "csaver.h"
+#include "raylib/src/raylib.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 const int windowWidth = 800;
 const int windowHeight = 800;
 
-int main() {
+double angle = 30.0f;	
+int offset = 0;
+int length = 200;
 
-    srandom(69);
+int main(int argc, char* argv[]) {
+	srandom(420);
+	angle = convertToRadian(angle);
+	
+	InitWindow(windowWidth, windowHeight, "CSaver");
+	SetExitKey(KEY_CAPS_LOCK); // Apparently caps lock still sends caps lock signal
 
-    InitWindow(windowWidth, windowHeight, "Lines");
-    SetExitKey(KEY_CAPS_LOCK); // Apparently caps lock still sends caps lock signal
+	while (!WindowShouldClose()) {
+            animatedLine(random() % 400, convertToRadian(random() % 90), 300, 1, random() % 500, randomColor());
+	}
 
-    while (!WindowShouldClose()) {
-        
-        BeginDrawing();
-
-        randomBotLine();
-        usleep(10000);
-
-        EndDrawing();
-
-    }
-
-    CloseWindow();
-    return 0;
+	CloseWindow();
+	return 0;
 }
