@@ -1,26 +1,29 @@
 #include "csaver.h"
 #include "raylib/src/raylib.h"
+#include <math.h>
 #include <stdlib.h>
-#include <unistd.h>
 
-const int windowWidth = 800;
-const int windowHeight = 800;
+const int windowWidth = 1440;
+const int windowHeight = 900;
 
-double angle = 30.0f;	
-int offset = 0;
-int length = 200;
+double angleInput = 15.0f;	
+int offset = 200;
+int length = 50;
+
 
 int main(int argc, char* argv[]) {
-	srandom(420);
-	angle = convertToRadian(angle);
-	
-	InitWindow(windowWidth, windowHeight, "CSaver");
-	SetExitKey(KEY_CAPS_LOCK); // Apparently caps lock still sends caps lock signal
+    srandom(1337);
+    // Angle angle = {convertToRadian(angleInput), sin(angleInput), cos(angleInput), tan(angleInput)};
 
-	while (!WindowShouldClose()) {
-            animatedLine(random() % 400, convertToRadian(random() % 90), 300, 1, random() % 500, randomColor());
-	}
+    InitWindow(windowWidth, windowHeight, "CSaver");
+    SetExitKey(KEY_CAPS_LOCK); // Apparently caps lock still sends caps lock signal
 
-	CloseWindow();
-	return 0;
+    while (!WindowShouldClose()) {
+        double rangle = convertToRadian(random() % 180);
+        Angle angle = {rangle, sin(rangle), cos(rangle), tan(rangle)};
+        animatedLine(random() % windowWidth, angle, random() % 95, 1, randomColor());
+    }
+
+    CloseWindow();
+    return 0;
 }
