@@ -1,21 +1,9 @@
 #include "csaver.h"
-#include <math.h>
+#include "csaverutil.h"
 #include <stdio.h>
-#include <unistd.h>
-
-#define MAXANGLE 180 
 
 extern const int windowWidth;
 extern const int windowHeight;
-
-double convertToRadian(double angleDegrees) {
-    return angleDegrees * PI / 180.0f;
-}
-
-Color randomColor() {
-    Color randomColor = {random() % 255, random() % 255, random() % 255, 255}; 
-    return randomColor;
-}
 
 void randomBotLine() {
     double randomAngle = random() % MAXANGLE;
@@ -31,35 +19,67 @@ void botLine(int offset, Angle angle, Color color) { // Offset from 0 to windowW
 
 void scaledLine(int offset, Angle angle, double length, int step, Color color) {
 }
-void animatedLine(int offset, Angle angle, double length, int step, Color color) { 
-    double xPos = offset; // Default positions for X and Y
-    double yPos = windowHeight;
-    double xPosTrace = offset;
-    double yPosTrace = windowHeight;
+
+void animatedLine(int offset, Angle angle, double length, int step, Color color, Side side) { 
+    double xPosOriginal = offset; // Default positions for X and Y
+    double yPosOriginal = windowHeight;
+    switch (side) {
+        case TOP:
+            xPosOriginal = offset;
+            yPosOriginal = 0;
+            angle = generateAngle(180 + angle.degrees);
+            break;
+        case LEFT:
+            xPosOriginal = 0;
+            yPosOriginal = offset;
+            break;
+        case RIGHT:
+            xPosOriginal = windowWidth;
+            yPosOriginal = offset;
+            angle = generateAngle(angle.degrees + 180);
+            break;
+        case BOTTOM:
+            break;
+    }
+    double xPosTrace = xPosOriginal;
+    double yPosTrace = yPosOriginal;
+
+    double xPos = xPosOriginal;
+    double yPos = yPosOriginal;
 
     int origLength = length;
     int traceLineCounter = 0;
     int traceLength = 0;
 
-    while (xPosTrace < windowWidth && xPosTrace > 0 && yPosTrace >= 0.0f) { 
-        BeginDrawing();    
-
-        xPos = angle.cosine * length + offset;
-        yPos = windowHeight - ((xPos - offset) * angle.tangent);
-        DrawLine(offset, windowHeight, xPos, yPos, color); 
+    printf("Angle: %f\n", angle.degrees);
+    while (xPosTrace <= windowWidth && xPosTrace >= 0 && yPosTrace >= 0.0f && yPosTrace <= windowHeight) { 
+        BeginDrawing();
+	if (xPosOriginal == offset) { // Check if we are TOP or BOTTOM
+	    xPos = angle.cosine * length + xPosOriginal;
+	    yPos = yPosOriginal - ((xPos - xPosOriginal) * angle.tangent);
+	} else { // LEFT or RIGHT
+            yPos = angle.cosine * length + yPosOriginal;
+            xPos = xPosOriginal + ((yPos - yPosOriginal) * angle.tangent);
+	}
+        DrawLine(xPosOriginal, yPosOriginal, xPos, yPos, color); 
 
         if (traceLineCounter >= origLength) { // trace line logic
-            xPosTrace = angle.cosine * traceLength + offset;
-            yPosTrace = windowHeight - ((xPosTrace - offset) * angle.tangent);
-            DrawLine(offset, windowHeight, xPosTrace, yPosTrace, BLACK); 
+            if (xPosOriginal == offset) {
+                xPosTrace = angle.cosine * traceLength + xPosOriginal;
+                yPosTrace = yPosOriginal - ((xPosTrace - xPosOriginal) * angle.tangent);
+            } else {
+                yPosTrace = angle.cosine * traceLength + yPosOriginal;
+                xPosTrace = xPosOriginal + ((yPosTrace - yPosOriginal) * angle.tangent);
+            }
+            DrawLine(xPosOriginal, yPosOriginal, xPosTrace, yPosTrace, BLACK); 
             ++traceLength;
         }
 
-        EndDrawing();
 
-        length += step;
+	length += step;
         ++traceLineCounter;
         // printf("X: %f, Y: %f\n", xPos, yPos); // logging
+        EndDrawing();
     }
 }
 
